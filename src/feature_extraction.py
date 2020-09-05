@@ -8,16 +8,12 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 from  sklearn.metrics import mutual_info_score
-def matplotlib_imshow(img, one_channel=True):
-    npimg = img.detach().numpy()
-    if one_channel:
-        npimg = npimg.reshape(64,32)
-        plt.imshow(npimg, cmap="Greys")
-        plt.show()
-    else:
-        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+from utils.utils import matplotlib_imshow
 
 def distance_measure(matrix1 , matrix2):
+    """
+    Distance formula to compare squared distance between feature vectors.
+    """
     difference = np.square(matrix2 - matrix1)
     difference = np.sqrt(difference)
     return (np.sum(difference))/len(matrix1)
@@ -110,19 +106,3 @@ if __name__ == '__main__':
     print(f'Total Mutual Similarity:{total_mutual_similarity/i}')
     print(f'Total Cross Distance:{total_cross_distance/i}')
     print(f'Total Mutual Class Distance:{total_same_class_distance/i}')
-
-
-
-
-
-
-    """
-    matrix1sum = 0
-    for i in matrix1:
-        matrix1sum = matrix1sum + i
-    matrix2sum = 0
-    for i in matrix2:
-        matrix2sum = matrix2sum + i
-    return (abs(matrix1sum - matrix2sum)/len(matrix1)) 
-
-    """

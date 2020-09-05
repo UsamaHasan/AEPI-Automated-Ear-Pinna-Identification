@@ -3,94 +3,51 @@ import numpy as np
 from model import Net
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from utils import to_categorical
+from utils.train_utils import train_model
 from torch.utils.data import DataLoader , TensorDataset
+from utils.utils import CustomDataset
+from tqdm import tqdm
 
-num_classes = 5
+
 
 if __name__ == '__main__':
 
-    #Data Loading.
-    dataset = np.load('images.npy',encoding='bytes') #load dataset file
-    labels  = np.load('labels.npy') #load labels file
-    dict_label = {36:0, 62:2, 97:3, 49:1, 157:4}
-    print(dict_label)
+    dataset = np.load('..dataset\images_PIL.npy',allow_pickle=True,encoding='bytes') #load dataset file
+    trainX , validX , trainY , validY = train_test_split(dataset,labels,test_size=0.2,random_state = 44)
+    trainY = torch.tensor(trainY).long()
+    validY = torch.tensor(validY).long()
+    trainY-=1
+    validY-=1
+    train_transform = transforms.Compose([transforms.ToPILImage(mode=None),
+                                      transforms.Resize((80,80)),
+                                      transforms.RandomCrop(64,padding=4),
+                                      transforms.ColorJitter(brightness=0.5),
+                                      transforms.RandomHorizontalFlip(),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.4601,0.4601,0.4601],[0.2701,0.2701,0.2701])])
+    valid_transform = transforms.Compose([transforms.ToPILImage(mode=None),
+                                        transforms.Resize((64,64)),
+                                        transforms.ToTensor(),
+                                        transforms.Normalize([0.4556,0.4556,0.4556],[0.2716,0.2716,0.2716])
+                                        ])
+    trainDataset = CustomDataset((trainX,trainY),train_transform)
+    validDataset = CustomDataset((validX,validY),valid_transform)
+    trainLoader = DataLoader(trainDataset,batch_size = 64 , num_workers=4,shuffle=True)
+    validationLoader  = DataLoader(validDataset, batch_size=32 , num_workers=4,shuffle=True)
+    batch , labels = next(iter(trainLoader))
+    print(f'Batch Size:{batch.size()}')
     
-    new_labels = []
-    for label in labels:
-        new_labels.append(dict_label[label])
-    
-    x_train , x_test , y_train , y_test = train_test_split(dataset,new_labels,test_size= 0.33)
-    
-    #Channel first for PyTorch
-    x_train = x_train.reshape(x_train.shape[0],x_train.shape[3],x_train.shape[1],x_train.shape[2])
-    x_test = x_test.reshape(x_test.shape[0],x_test.shape[3],x_test.shape[1],x_test.shape[2])
-    
-    print('Train Data Shape',x_train.shape)
-    print('Test Data Shape',x_test.shape)
+    NUM_EPOCH = 50
+    MODEL_PATH = 'final_model'
+    FINAL_ACCURACY = 0.0 
+    NUM_CLASSES = 164
 
-    #Converting datatype to Float32
-    x_train = x_train.astype('float32')
-    x_test  = x_test.astype('float32')
-    
-    #Normalizing the Input
-    x_train/=255
-    x_test/=255
-
-    #Converting labels to OneHot vector
-    #y_train = to_categorical(y_train)
-
-    y_train = np.array(y_train)
- #   y_train = y_train - 1
-  #  y_test = y_test - 1
-    
-    
-    #Converting Numpy array into Tensor
-    tensor_x = torch.Tensor(x_train)
-    tensor_y = torch.Tensor(y_train).long()
-    print(f'Tensor Y:{tensor_y.size()}')
-    dataset = TensorDataset(tensor_x , tensor_y)
-    trainloader = DataLoader(dataset , batch_size = 16, shuffle=True)
-
-    #Initializing Model.
-    
-    #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    device = torch.device("cpu")
-    net = Net(num_classes=num_classes)
-    net.to(device)
-
+    # Initializing model
     criterion = torch.nn.CrossEntropyLoss()
-    
-    optimizer = optim.SGD(net.parameters(), lr = 0.01 , momentum=0.9 )
-    
-    #Training Mini-batches.
-    
-    for epoch in range(100):
-        running_loss = 0.0
-        for i, data in enumerate(trainloader , 0):
-            images , labels = data
-            
-            images = torch.autograd.Variable(images)
-            labels = torch.autograd.Variable(labels)
-
-            labels = labels.to(device)
-            images = images.to(device)
-            optimizer.zero_grad()
-            outputs = net(images)
-            print(f'Label: {labels}')
-            print(f'Label Shape:{labels.size()} , Ouput Shape:{outputs.size()}') 
-            loss = criterion(outputs , labels)
-            loss.backward()
-            optimizer.step()
-            
-            # print statistics
-            
-            running_loss += loss.item()
-            if i % 300 == 299:    # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                      (epoch + 1, i + 1, running_loss / 300))
-                running_loss = 0.0
-
-    print('Finished Training')
-
+    clip_value = 0.5
+    model = Net()
+    model = model.to(device)
+    for p in model.parameters():
+        p.register_hook(lambda grad: torch.clamp(grad, -clip_value, clip_value))
+    optimizer = optim.Adam(model.parameters() , lr = 1e-3)
+    model_fit = train_model(model ,criterion = criterion, optimizer= optimizer ,NUM_EPOCHS=NUM_EPOCH)
