@@ -10,14 +10,6 @@ import matplotlib.pyplot as plt
 from  sklearn.metrics import mutual_info_score
 from utils.utils import matplotlib_imshow
 
-def distance_measure(matrix1 , matrix2):
-    """
-    Distance formula to compare squared distance between feature vectors.
-    """
-    difference = np.square(matrix2 - matrix1)
-    difference = np.sqrt(difference)
-    return (np.sum(difference))/len(matrix1)
-
 if __name__ == '__main__':
 
     dataset = np.load('images.npy',encoding='bytes') #load dataset file

@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from model import Net
+from models import Net
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from utils.train_utils import train_model
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     trainLoader = DataLoader(trainDataset,batch_size = 64 , num_workers=4,shuffle=True)
     validationLoader  = DataLoader(validDataset, batch_size=32 , num_workers=4,shuffle=True)
     batch , labels = next(iter(trainLoader))
-    print(f'Batch Size:{batch.size()}')
+    print(f'Batch` Size:{batch.size()}')
     
     NUM_EPOCH = 50
     MODEL_PATH = 'final_model'

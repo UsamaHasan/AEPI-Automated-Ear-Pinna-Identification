@@ -28,3 +28,13 @@ def matplotlib_imshow(img, one_channel=True):
         plt.show()
     else:
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
+
+
+
+def distance_measure(matrix1 , matrix2):
+    """
+    Distance formula to compare squared distance between feature vectors.
+    """
+    difference = np.square(matrix2 - matrix1)
+    difference = np.sqrt(difference)
+    return (np.sum(difference))/len(matrix1)

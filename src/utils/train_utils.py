@@ -1,8 +1,8 @@
 import torch
 from tqdm import tqdm
+
 def train_model(model , optimizer ,criterion, NUM_EPOCHS):
     """
-    
     """
     since = time.time()
     best_acc = 0.0
@@ -64,3 +64,8 @@ def train_model(model , optimizer ,criterion, NUM_EPOCHS):
     print('Best val Acc: {:4f}'.format(best_acc))
     # model.load_state_dict(best_weights)
     return model
+
+def init_weights(m):
+    """"""
+    if isinstance(m,(nn.Conv2d ,nn.Linear )) :
+        torch.nn.init.kaiming_normal_(m.weight)
