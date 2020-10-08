@@ -54,33 +54,42 @@ class ArcMarginProduct(nn.Module):
 
 
 
-
 class Net(nn.Module):
-    """
-    """
+    """"""
     def __init__(self):
         super(Net,self).__init__()
         self.NUM_CLASSES = 164
         self.levels = [4,2,1]
-        model = models.vgg19_bn(pretrained=True)
-        
+        model = models.resnet152(pretrained=True)
         self.feature_extractor = nn.Sequential(*(list(model.children())[:-1]))
-        #self.fc1 = nn.Linear(2048,1024)
-        self.fc2 = nn.Linear(2048,512)
-        self.fc3 = nn.Linear(512,self.NUM_CLASSES)
+        self.fc1 = nn.Linear(2560,1024,bias=False)
+        self.bn1 = nn.BatchNorm1d(num_features=1024)
+        self.fc3 = nn.Linear(1024,self.NUM_CLASSES)
         self.dropout = nn.Dropout(p=0.3)
-
+        self.relu = nn.ReLU(True)
+        self.block = self.separable_conv_block()
+    
     def forward(self,x):
-        x = self.feature_extractor(x)       
-        #x = self.spatial_pyramid_pool(x,[int(x.size(2)),int(x.size(3))],"max")
-        #x = self.dropout(x)
-        x = x.view(-1,2048)
-        #x = self.fc1(x)
-        #x = self.dropout(x)
-        x = self.fc2(x)
+        features = self.feature_extractor(x)
+        edges = self.block(x)
+        features = torch.flatten(features,1)        
+        edges = torch.flatten(edges,1)
+        x = torch.cat((features,edges),1)
+        x = self.fc1(x)
+        x = self.relu(self.bn1(x))
         x = self.dropout(x)
         x = self.fc3(x)
         return x
+    
+    def separable_conv_block(self):
+        return torch.nn.Sequential( nn.Conv2d(3,64,(1,3),stride=3,groups=1),
+                             nn.PReLU(),
+                             nn.Conv2d(64,128,(3,1),stride=3,groups=64),
+                             nn.PReLU(),
+                             nn.Conv2d(128,256,(1,3),stride=3,groups=1),
+                             nn.PReLU(),
+                             nn.Conv2d(256,512,(3,1),stride=3,groups=256),
+                             nn.PReLU())
     
     def spatial_pyramid_pool(self,previous_conv, previous_conv_size, mode ):
         """
