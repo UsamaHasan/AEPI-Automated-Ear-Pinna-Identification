@@ -1,9 +1,6 @@
 import torch
-from tqdm import tqdm
-
-def train_model(model , optimizer ,criterion, NUM_EPOCHS):
-    """
-    """
+from tqdm.notebook import tqdm
+def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPOCHS):
     since = time.time()
     best_acc = 0.0
     for epoch in tqdm(range(NUM_EPOCHS)):
@@ -13,56 +10,71 @@ def train_model(model , optimizer ,criterion, NUM_EPOCHS):
                 model.train()
                 running_loss = 0.0
                 running_correct = 0
-                for images , labels in (iter(trainLoader)):
-                    labels = torch.LongTensor(labels)
-                    outputs = torch.zeros(size=(len(images),164))
-                    for i ,image in enumerate(images):
-                        # Inserting Batch size 1 in image
-                        image = image.to(device)
-                        image = image.view(1,image.shape[0],image.shape[1],image.shape[2])   
-                        output = model(image)
-                        outputs[i] = output   
-                    loss = criterion(outputs,labels)    
-                    _ , preds = torch.max(outputs ,1)
+                class_correct = 0.0
+                binary_correct = 0.0
+                total = 0
+                for images , labels in tqdm((iter(trainLoader))):
+                    images = images.to(device)
+                    labels = labels.to(device)
                     optimizer.zero_grad()
+                    #Forward Pass
+                    class_logits , binary_logits = model(images,labels[:,:1])
+                    #Calculate loss   
+                    class_labels = torch.squeeze(labels[:,:1])
+                    binary_labels = torch.squeeze(labels[:,1:]).float()
+          
+                    class_loss = criterion(class_logits,class_labels)
+                    
+                    binary_loss = binary_criterion(torch.squeeze(binary_logits),binary_labels)                     
+                    _ , class_preds = torch.max(class_logits ,1)
+                    binary_preds = torch.round(binary_logits)
+                    
+                    # Add loss of both softmax loss and binary loss
+                    loss = class_loss + binary_loss
+                    #Calculate grads
                     loss.backward()
                     optimizer.step()
-                    running_loss += loss.item() * len(images)
-                    running_correct += torch.sum(preds == labels.data)
+                    if epoch > 30:
+                        schedular.step()
+                    running_loss += loss.item() 
+                    total += labels.size(0)
+                    class_correct += (class_preds == class_labels).sum().item()
+                    binary_correct += (torch.squeeze(binary_preds) == binary_labels).sum().item()
+                    
+                schedular.step()
+                print(f'Train Epoch:{epoch} Loss:{running_loss / len(trainLoader)}  Accuracy:{100 * class_correct / total} Gender Accuracy:{100 * binary_correct / total}')
 
-                epoch_loss = running_loss / len(x_train)
-                epoch_acc = running_correct.double() / len(x_train)
-                print(f'Train: Epoch{epoch}  Loss:{epoch_loss} ,  Accuracy{epoch_acc}')  
             else:
+                top3_acc.reset()            
                 model.eval()
                 running_loss = 0.0
                 running_correct = 0
-                for images , labels in iter(testLoader):
-                    labels = torch.LongTensor(labels)
-                    outputs = torch.zeros(size=(len(images),164))
-                    for i ,image in enumerate(images):
-                        # Inserting Batch size 1 in image
-                        image = image.to(device)
-                        image = image.view(1,image.shape[0],image.shape[1],image.shape[2])   
-                        output = model(image)
-                        print(output)
-                        outputs[i] = output
+                class_correct = 0.0
+                binary_correct = 0.0
+                total = 0
+                for images , labels in tqdm(iter(validationLoader)):
+                    images = images.to(device)
+                    labels = labels.to(device)
+                    class_logits , binary_logits= model(images,labels[:,:1])
+                    class_labels = torch.squeeze(labels[:,:1])
+                    binary_labels = torch.squeeze(labels[:,1:]).float()
 
-                    _ , preds = torch.max(outputs ,1)
-                    loss = criterion(outputs , labels)
-                    running_loss += loss.item() * len(images)
-                    running_correct += torch.sum(preds == labels.data)
-                epoch_loss = running_loss / len(x_test)
-                epoch_acc = running_correct.double() / len(x_test)
-                print(f'Test: Epoch:{epoch}, Loss:{epoch_loss}, Accuracy:{epoch_acc}')
-                if epoch_acc > best_acc:
-                    best_acc = epoch_acc
-                    #best_weights = copy.deepcopy(model.state_dict())  
-            print()
+                    class_loss = criterion(class_logits,class_labels)
+                    binary_loss = binary_criterion(torch.squeeze(binary_logits),binary_labels)
+                    loss = class_loss + binary_loss
+                    _ , class_preds = torch.max(class_logits ,1)
+                    binary_preds = torch.round(binary_logits)
+                    running_loss += loss.item()
+                    total += labels.size(0)
+                    top3_acc.update(class_logits, class_labels)
+                    
+                    class_correct += (class_preds == class_labels).sum().item()
+                    binary_correct += (torch.squeeze(binary_preds) == binary_labels).sum().item()
+                print(f'Eval Epoch:{epoch} Loss:{running_loss / len(validationLoader)} Accuracy:{100 * class_correct / total } Gender Accuracy:{100 * binary_correct / total}')
+                print(f'{top3_acc.name}: {top3_acc.get()*100} ')
+             
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
-    print('Best val Acc: {:4f}'.format(best_acc))
-    # model.load_state_dict(best_weights)
     return model
 
 def init_weights(m):
