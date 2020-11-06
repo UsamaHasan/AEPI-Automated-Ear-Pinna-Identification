@@ -1,1 +1,1 @@
-# Ear-Feature-Extraction-and-Matching
+# Ear Feature Extraction and Matching
