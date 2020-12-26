@@ -34,7 +34,7 @@ python train.py --epochs 100 --batch_size 256 --lr 1e-3
 ### Results:
 ```
 |	Method 	          |		Top 1 Accuracy	|	Top 3 Accuracy	|	
-|	----------	      |   --------------  |	--------------	|
+|	---	      |   ---  |	---	|
 |	VGG-19	          |		   55.34			  |	    72.13			  |  
 |	VGG-19 + SE       |		   59.79			  |	    75.75			  |
 |	ResNet-50	        |	   	 60.55			  |	    76.64			  |
