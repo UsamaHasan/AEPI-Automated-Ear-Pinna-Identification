@@ -32,7 +32,7 @@ cd AEPI-Automated-Ear-Pinna-Identification && cd src
 python train.py --epochs 100 --batch_size 256 --lr 1e-3
 ```
 ### Results:
-```
+
 |	Method 	          |		Top 1 Accuracy	|	Top 3 Accuracy	|	
 |	---	      |   ---  |	---	|
 |	VGG-19	          |		   55.34			  |	    72.13			  |  
@@ -40,7 +40,7 @@ python train.py --epochs 100 --batch_size 256 --lr 1e-3
 |	ResNet-50	        |	   	 60.55			  |	    76.64			  |
 |	ResNet-50 + SE    |		   66.22			  |	    81.54			  |
 |	ResNet-152+ SE    |		   75.5410		  |	    87.207			|
-```
+
 ### Dataset:
 EarVN1.0: A new large-scale ear images dataset in the wild.
 ```
