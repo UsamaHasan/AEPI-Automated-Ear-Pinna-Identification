@@ -7,6 +7,7 @@ from utils.train_utils import train_model
 from torch.utils.data import DataLoader , TensorDataset
 from utils.utils import CustomDataset
 from tqdm import tqdm
+from utils.utils import init_weights
 
 
 
@@ -16,8 +17,7 @@ if __name__ == '__main__':
     trainX , validX , trainY , validY = train_test_split(dataset,labels,test_size=0.2,random_state = 44)
     trainY = torch.tensor(trainY).long()
     validY = torch.tensor(validY).long()
-    trainY-=1
-    validY-=1
+
     train_transform = transforms.Compose([transforms.ToPILImage(mode=None),
                                       transforms.Resize((80,80)),
                                       transforms.RandomCrop(64,padding=4),
@@ -30,10 +30,13 @@ if __name__ == '__main__':
                                         transforms.ToTensor(),
                                         transforms.Normalize([0.4556,0.4556,0.4556],[0.2716,0.2716,0.2716])
                                         ])
+    # Dataset
     trainDataset = CustomDataset((trainX,trainY),train_transform)
     validDataset = CustomDataset((validX,validY),valid_transform)
-    trainLoader = DataLoader(trainDataset,batch_size = 64 , num_workers=4,shuffle=True)
-    validationLoader  = DataLoader(validDataset, batch_size=32 , num_workers=4,shuffle=True)
+    # Dataset Loader 
+    trainLoader = DataLoader(trainDataset,batch_size = 256 , num_workers=4,shuffle=True,pin_memory=True)
+    validationLoader  = DataLoader(validDataset, batch_size=64 , num_workers=4,shuffle=True,pin_memory=True)
+    
     batch , labels = next(iter(trainLoader))
     print(f'Batch` Size:{batch.size()}')
     
@@ -47,6 +50,8 @@ if __name__ == '__main__':
     clip_value = 0.5
     model = Net()
     model = model.to(device)
+    model.block.apply(init_weights)
+
     for p in model.parameters():
         p.register_hook(lambda grad: torch.clamp(grad, -clip_value, clip_value))
     optimizer = optim.Adam(model.parameters() , lr = 1e-3)

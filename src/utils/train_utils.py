@@ -1,5 +1,7 @@
 import torch
 from tqdm.notebook import tqdm
+
+from tqdm.notebook import tqdm
 def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPOCHS):
     since = time.time()
     best_acc = 0.0
@@ -17,12 +19,14 @@ def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPO
                     images = images.to(device)
                     labels = labels.to(device)
                     optimizer.zero_grad()
-                    #Forward Pass
-                    class_logits , binary_logits = model(images,labels[:,:1])
+                    
                     #Calculate loss   
                     class_labels = torch.squeeze(labels[:,:1])
                     binary_labels = torch.squeeze(labels[:,1:]).float()
-          
+                    
+                    #Forward Pass
+                    class_logits , binary_logits = model(images,class_labels)
+
                     class_loss = criterion(class_logits,class_labels)
                     
                     binary_loss = binary_criterion(torch.squeeze(binary_logits),binary_labels)                     
@@ -55,9 +59,10 @@ def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPO
                 for images , labels in tqdm(iter(validationLoader)):
                     images = images.to(device)
                     labels = labels.to(device)
-                    class_logits , binary_logits= model(images,labels[:,:1])
+                    
                     class_labels = torch.squeeze(labels[:,:1])
                     binary_labels = torch.squeeze(labels[:,1:]).float()
+                    class_logits , binary_logits= model(images,class_labels)
 
                     class_loss = criterion(class_logits,class_labels)
                     binary_loss = binary_criterion(torch.squeeze(binary_logits),binary_labels)
@@ -76,7 +81,6 @@ def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPO
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     return model
-
 def init_weights(m):
     """"""
     if isinstance(m,(nn.Conv2d ,nn.Linear )) :

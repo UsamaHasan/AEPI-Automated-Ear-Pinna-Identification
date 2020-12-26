@@ -1,4 +1,6 @@
 from torch.utils.data import Dataset
+from torchvision.utils import make_grid
+
 class CustomDataset(Dataset):
     """
     A Custom dataset class to load numpy images and apply torchvision.transforms on them.s 
@@ -17,24 +19,12 @@ class CustomDataset(Dataset):
     def __len__(self):
         return len(self.tensors[0]) 
 
-def matplotlib_imshow(img, one_channel=True):
-    """
-    To plot tensor as images 
-    """
-    npimg = img.detach().numpy()
-    if one_channel:
-        npimg = npimg.reshape(64,32)
-        plt.imshow(npimg, cmap="Greys")
-        plt.show()
-    else:
-        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+def batch_viz(batch, one_channel=True):
+    plt.figure(figsize=(8,8))
+    grid = make_grid(batch,padding=2,normalize=True)
+    plt.imshow(np.transpose(grid,(1,2,0)))
 
-
-
-def distance_measure(matrix1 , matrix2):
-    """
-    Distance formula to compare squared distance between feature vectors.
-    """
-    difference = np.square(matrix2 - matrix1)
-    difference = np.sqrt(difference)
-    return (np.sum(difference))/len(matrix1)
+def init_weights(m):
+    """"""
+    if isinstance(m,(nn.Conv2d ,nn.Linear )) :
+        torch.nn.init.kaiming_normal_(m.weight)
