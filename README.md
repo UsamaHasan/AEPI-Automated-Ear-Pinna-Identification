@@ -4,14 +4,11 @@
 
 Code release for the paper AEPI: Representation Learning and Evaluation of Human Ear Identification based on a blend of Residual Network and Spatial Encoding.
 
-**Authors**:[Usama Hasan](https://usamahasan.github.io/) ,[Waqar Hussain](https://www.researchgate.net/profile/Waqar_Hussain7),[Nouman Rasool](https://www.researchgate.net/profile/Nouman_Rasool)
+**Authors**: [Usama Hasan](https://usamahasan.github.io/), [Waqar Hussain](https://www.researchgate.net/profile/Waqar_Hussain7), [Nouman Rasool](https://www.researchgate.net/profile/Nouman_Rasool)
 
 ## Introduction
-<<<<<<< HEAD
-In this work, we present AEPI; first 
-=======
+
 In this work, we present automated ear identification model on Ear VN dataset, a large-scale ear images dataset in the wild.
->>>>>>> a8d9fe8f660cc4f816d1f604f353fb9502f1bdca
 
 
 ### Supported features and ToDo list
@@ -25,11 +22,8 @@ All the codes are tested in the following environment:
 
 ### Usage: 
 
-<<<<<<< HEAD
 a. Clone the AEPI repository.
-=======
-a. Clone the repository.
->>>>>>> a8d9fe8f660cc4f816d1f604f353fb9502f1bdca
+
 ```shell
 git clone  https://github.com/UsamaHasan/AEPI-Automated-Ear-Pinna-Identification
 ```
