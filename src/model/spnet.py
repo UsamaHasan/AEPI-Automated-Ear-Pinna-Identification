@@ -18,7 +18,7 @@ class Spnet(nn.Module):
         self.binary_layer = nn.Linear(1024,1)       
         self.dropout = nn.Dropout(p=0.3)
         self.relu = nn.ReLU(True)
-        self.block = self.separable_conv_block()
+        self.block = self.spatial_encoder()
         self.flatten = nn.Flatten()
         self.sigmoid = nn.Sigmoid()
         self.loss_lmcl = LMCL_loss(num_classes=self.NUM_CLASSES, feat_dim=1024, device=device)
@@ -49,12 +49,27 @@ class Spnet(nn.Module):
             class_l = self.linear3(x)
         return class_l , gender_l
 
-    def separable_conv_block(self):
-        return torch.nn.Sequential( nn.Conv2d(3,64,(1,3),stride=3,groups=1),
-                             nn.ReLU(),
-                             nn.Conv2d(64,128,(3,1),stride=3,groups=64),
-                             nn.ReLU(),
-                             nn.Conv2d(128,256,(1,3),stride=3,groups=1),
-                             nn.ReLU(),
-                             nn.Conv2d(256,512,(3,1),stride=3,groups=256),
-                             nn.ReLU())
+    def spatial_encoder(self):
+        
+        return torch.nn.Sequential(torch.nn.Conv2d(3,64,(1,3),stride=2,groups=1),
+                                  nn.BatchNorm2d(64),
+                                  nn.ReLU(),
+                                  torch.nn.Conv2d(64,128,(3,1),stride=2,groups=64),
+                                  nn.BatchNorm2d(128),
+                                  nn.ReLU(),
+                                  torch.nn.Conv2d(128,64,(1,1),stride=1),
+                                  nn.BatchNorm2d(64),
+                                  nn.ReLU(),
+                                  torch.nn.Conv2d(64,128,(1,2),stride=2,groups=1),
+                                  nn.BatchNorm2d(128),
+                                  nn.ReLU(),
+                                  torch.nn.Conv2d(128,256,(2,1),stride=2,groups=128),
+                                  nn.BatchNorm2d(256),
+                                  nn.ReLU(),
+                                  torch.nn.Conv2d(256,128,(1,1),stride=1),
+                                  nn.BatchNorm2d(128),
+                                  nn.ReLU(),
+                                  torch.nn.Conv2d(128,256,(1,2),stride=2,groups=1),
+                                  nn.BatchNorm2d(256),
+                                  nn.ReLU(),
+                                  torch.nn.Conv2d(256,512,(2,1),stride=2,groups=256))

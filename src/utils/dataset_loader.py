@@ -101,7 +101,3 @@ def loader(root_dir):
     np.save('images',image_array)
     np.save('labels',label_array)
 
-
-if __name__ == '__main__':
-    #Enter path of dataset here.
-    loader('/home/usamahasan/Dataset/EarVN1.0 dataset/Images/')
