@@ -1,3 +1,9 @@
+"""
+This file contains the EncoderDecoderModel we used, we will soon upload the code to train these
+model, currently we have only provided the model definations.
+"""
+
+
 import torch.nn as nn
 import torch
 

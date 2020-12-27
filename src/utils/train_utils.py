@@ -1,8 +1,19 @@
 import torch
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
-from tqdm.notebook import tqdm
-def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPOCHS):
+def train_model(model ,optimizer, scheduler ,criterion,binary_criterion, NUM_EPOCHS):
+    """
+    Args:
+        model(nn.Module): 
+        optimizer(nn.optim):
+        scheduler(nn.optim):
+        criterion(nn.CrossEntropy):
+        binary_criterion(nn.BCELoss):
+        NUM_EPOCSH(int):
+    Returns:
+        model(nn.Module):
+    """
+    
     since = time.time()
     best_acc = 0.0
     for epoch in tqdm(range(NUM_EPOCHS)):
@@ -39,13 +50,13 @@ def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPO
                     loss.backward()
                     optimizer.step()
                     if epoch > 30:
-                        schedular.step()
+                        scheduler.step()
                     running_loss += loss.item() 
                     total += labels.size(0)
                     class_correct += (class_preds == class_labels).sum().item()
                     binary_correct += (torch.squeeze(binary_preds) == binary_labels).sum().item()
                     
-                schedular.step()
+                scheduler.step()
                 print(f'Train Epoch:{epoch} Loss:{running_loss / len(trainLoader)}  Accuracy:{100 * class_correct / total} Gender Accuracy:{100 * binary_correct / total}')
 
             else:
@@ -81,7 +92,4 @@ def train_model(model ,optimizer, schedular ,criterion,binary_criterion, NUM_EPO
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     return model
-def init_weights(m):
-    """"""
-    if isinstance(m,(nn.Conv2d ,nn.Linear )) :
-        torch.nn.init.kaiming_normal_(m.weight)
+
