@@ -7,7 +7,11 @@ Code release for the paper AEPI: Representation Learning and Evaluation of Human
 **Authors**:[Usama Hasan](https://usamahasan.github.io/) ,[Waqar Hussain](https://www.researchgate.net/profile/Waqar_Hussain7),[Nouman Rasool](https://www.researchgate.net/profile/Nouman_Rasool)
 
 ## Introduction
+<<<<<<< HEAD
 In this work, we present AEPI; first 
+=======
+In this work, we present automated ear identification model on Ear VN dataset, a large-scale ear images dataset in the wild.
+>>>>>>> a8d9fe8f660cc4f816d1f604f353fb9502f1bdca
 
 
 ### Supported features and ToDo list
@@ -19,9 +23,34 @@ All the codes are tested in the following environment:
 * Python 3.6+
 * PyTorch 1.6
 
-### To Run: 
+### Usage: 
 
+<<<<<<< HEAD
 a. Clone the AEPI repository.
+=======
+a. Clone the repository.
+>>>>>>> a8d9fe8f660cc4f816d1f604f353fb9502f1bdca
 ```shell
 git clone  https://github.com/UsamaHasan/AEPI-Automated-Ear-Pinna-Identification
+```
+```shell
+cd AEPI-Automated-Ear-Pinna-Identification && cd src
+```
+```
+python train.py --epochs 100 --batch_size 256 --lr 1e-3
+```
+### Results:
+
+|	Method 	          |		Top 1 Accuracy	|	Top 3 Accuracy	|	
+|	---	      |   ---  |	---	|
+|	VGG-19	          |		   55.34			  |	    72.13			  |  
+|	VGG-19 + SE       |		   59.79			  |	    75.75			  |
+|	ResNet-50	        |	   	 60.55			  |	    76.64			  |
+|	ResNet-50 + SE    |		   66.22			  |	    81.54			  |
+|	ResNet-152+ SE    |		   75.5410		  |	    87.207			|
+
+### Dataset:
+EarVN1.0: A new large-scale ear images dataset in the wild.
+```
+Hoang VT. EarVN1.0: A new large-scale ear images dataset in the wild. Data in Brief. 2019 Dec;27:104630. DOI: 10.1016/j.dib.2019.104630.  
 ```
