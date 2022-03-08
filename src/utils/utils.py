@@ -2,6 +2,10 @@ from torch.utils.data import Dataset
 from torchvision.utils import make_grid
 from torch.utils.data import Subset
 from sklearn.model_selection import train_test_split
+import torch.nn as nn
+import torch
+import matplotlib.pyplot as plt
+import numpy as np
 
 def train_val_dataset(dataset, val_split=0.25):
     """
@@ -25,7 +29,7 @@ class CustomDataset(Dataset):
         x = self.tensors[0][index]  
         y = self.tensors[1][index]
         if self.transform:
-            x = self.transform(x)
+            x = self.transform(np.uint8(x))
         return x , y
 
     def __len__(self):
