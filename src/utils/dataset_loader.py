@@ -28,8 +28,8 @@ def loader(root_dir):
             image = io.imread(image_path)
             rescaled_image = resize(image,(minimum_width,minimun_height))
                                 
-            #The first 3 literals of the image file contains the label/class of image.
-            label = child_path[:3]
+            #The first 3 literals of the parent folder contains the label/class of image.
+            label = os.path.basename(parent_path)[:3]
             try:
                 label = int(label)
                 image_list.append(rescaled_image)
