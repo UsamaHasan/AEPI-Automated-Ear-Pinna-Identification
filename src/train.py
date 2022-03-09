@@ -10,6 +10,7 @@ from utils.utils import CustomDataset
 from tqdm import tqdm
 from utils.utils import init_weights
 import argparse
+from torchvision import transforms
 
 
 if __name__ == '__main__':
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     args.add_argument("--lr",type=float,default=1e-3,help="Learning Rate")
     cfg = args.parse_args()
     print(cfg)
-    dataset = loader(cfg.dataset_path)
+    dataset, labels = loader(cfg.dataset_path)
     trainX , validX , trainY , validY = train_test_split(dataset,labels,test_size=0.2,random_state = 44)
     trainY = torch.tensor(trainY).long()
     validY = torch.tensor(validY).long()
@@ -56,10 +57,11 @@ if __name__ == '__main__':
 
     # Initializing model
     criterion = torch.nn.CrossEntropyLoss()
+    binary_criterion = torch.nn.BCELoss()
     #Gradient cliping value
     clip_value = 0.5
-    model = Spnet()
-    model = model.to(device)
+    model = Spnet(NUM_CLASSES)
+    # model = model.to(device)
     #Init Weights of spblock Kaiming He normal.
     model.block.apply(init_weights)
 
@@ -67,4 +69,4 @@ if __name__ == '__main__':
     for p in model.parameters():
         p.register_hook(lambda grad: torch.clamp(grad, -clip_value, clip_value))
     optimizer = optim.Adam(model.parameters() , lr = cfg.lr)
-    model_fit = train_model(model ,criterion = criterion, optimizer= optimizer ,NUM_EPOCHS=NUM_EPOCH)
+    model_fit = train_model(trainLoader, validationLoader, model ,criterion = criterion, binary_criterion = binary_criterion, optimizer= optimizer ,scheduler= optimizer , NUM_EPOCHS=NUM_EPOCH)

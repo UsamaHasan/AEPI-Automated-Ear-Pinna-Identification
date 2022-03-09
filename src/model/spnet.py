@@ -1,10 +1,29 @@
 import torch.nn as nn
 import torch
+from torchvision import models 
+import torch.nn.functional as F
+
+class LMCL(nn.Module):
+    def __init__(self, embedding_size, num_classes, s, m):
+        super(LMCL, self).__init__()
+        self.embedding_size = embedding_size
+        self.num_classes = num_classes
+        self.s = s
+        self.m = m
+        self.weights = nn.Parameter(torch.Tensor(num_classes, embedding_size))
+        nn.init.kaiming_normal_(self.weights)
+
+    def forward(self, embedding, label):
+        assert embedding.size(1) == self.embedding_size, 'embedding size wrong'
+        logits = F.linear(F.normalize(embedding), F.normalize(self.weights))
+        margin = torch.zeros_like(logits)
+        margin.scatter_(1, label.view(-1, 1), self.m)
+        m_logits = self.s * (logits - margin)
+        return logits, m_logits, self.s * F.normalize(embedding), F.normalize(self.weights)
 
 class Spnet(nn.Module):
     def __init__(self,NUM_CLASSES,state_dict=None):
-        super(Model,self).__init__()
-        
+        super(Spnet, self).__init__()
         self.NUM_CLASSES = NUM_CLASSES
         
         model = models.resnet152(pretrained=True)
@@ -21,7 +40,7 @@ class Spnet(nn.Module):
         self.block = self.spatial_encoder()
         self.flatten = nn.Flatten()
         self.sigmoid = nn.Sigmoid()
-        self.loss_lmcl = LMCL_loss(num_classes=self.NUM_CLASSES, feat_dim=1024, device=device)
+        self.loss_lmcl = LMCL(embedding_size=1024, num_classes=self.NUM_CLASSES, s = 8, m=0.2)
     
     def forward(self,x,labels=None):
         # Extract Features through ResNet Backbone feature extractor
